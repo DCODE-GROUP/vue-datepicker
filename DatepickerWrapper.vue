@@ -1,5 +1,5 @@
 <template>
-  <div class="datepicker-wrapper">
+  <div class="datepicker-wrapper test">
     <input
         v-if="isFormInput"
         :id="name"
@@ -8,6 +8,7 @@
         :value="formattedDate"
     > 
     <date-picker
+        :ref="name"
         v-model="date"
         value-type="format"
         :disabled="isDisabled"
@@ -25,24 +26,21 @@
         name: 'datepickerWrapper',
         components: {DatePicker},
         props: {
-            format: {
-                type: String,
-                default: 'DD/MM/YYYY',
-            },
-            type: {
-                type: String,
-                default: 'date',
-            },
-            value: {
-                type: String | Array,
-            },
-            name: {
-                type: String,
-            },
             isFormInput: {
                 type: Boolean,
                 default: false,
             },
+            name: {
+                type: String,
+                default(rawProps) {
+                    return this.isFormInput ? 'date' : null
+                }
+                // required: true, // only required when the component is a form input
+            },
+            value: {
+                type: String | Array,
+            },
+        
             isRange: {
                 type: Boolean,
                 default: false,
@@ -51,17 +49,39 @@
                 default: false,
                 type: Boolean,
             }
+            //ToDo is clearable 
         },
         data() {
             return {
+                format: 'DD/MM/YYYY',
+                type: 'date',
                 date: this.value,
-              unconvertedDates: false,
-                counter: 0
+            }
+        },
+        created() { // convert the iso date value prop to the format required
+            if (this.date) {
+                if (this.isRange) {
+                    const dateStartPieces = this.splitDate(this.date[0], '-')
+                    this.date[0] = `${dateStartPieces[2]}/${dateStartPieces[1]}/${dateStartPieces[0]}`
+                    const dateEndPieces = this.splitDate(this.date[1], '-')
+                    this.date[1] = `${dateEndPieces[2]}/${dateEndPieces[1]}/${dateEndPieces[0]}`
+                return
+                }
+                const datePieces = this.splitDate(this.date, '-')
+                this.date = `${datePieces[2]}/${datePieces[1]}/${datePieces[0]}`
             }
         },
         methods: {
-            dateToIso(date) {
-               this.counter > 0 ? console.log('reached datetoiso', date) : null
+            splitDate(value, character = '/') {
+                value = value.includes('T') ? value.split('T')[0] : value
+                value = value.includes(' ') ? value.split(' ')[0] : value
+                return value.split(character)
+            },
+            isoToDate(value) { //value needs to be yyyy-mm-dd to be converted to a Date
+                const datePieces = this.splitDate(value)
+                return `${datePieces[2]}-${datePieces[1]}-${datePieces[0]}`
+            },
+            dateToIso(date) { // convert the value to iso to save in the backend
                 return (date instanceof Date)
                     ? `${date.getFullYear()}-${this.padZero(date.getMonth() + 1)}-${this.padZero(date.getDate())}`
                     : null
@@ -72,34 +92,17 @@
         },
         computed: {
             formattedDate() {
-                if (this.date) {
-                    if (this.isRange) {
-                
-                    //     let start = this.date[0]
-                    //     let end = this.date[1]
-                    //    this.counter > 0 ? console.log('date', this.date, {start, end}) : null;
-
-                            //format needs to be yyyy-mm-dd to be converted to a Date
-                        let dateStart =  this.unconvertedDates ? Date(this.date[0]) : this.date[0]
-                        let dateEnd =  this.unconvertedDates ? new Date(this.date[1]) : this.date[1]
-
-                         this.counter > 0 ? console.log({dateStart, dateEnd}) : null;
-                         this.counter > 0 ? console.log(dateStart instanceof Date, dateEnd instanceof Date) : null;
-
-                        let startFormat = this.dateToIso(dateStart)
-                        let endFormat = this.dateToIso(dateEnd)
-
-                        this.counter > 0 ? console.log({startFormat, endFormat}) : null;
-                        this.unconvertedDates = false
-                        this.counter++
-                        console.log('log in formattedDate')
-                        return [startFormat, endFormat]
-                       
-                    }
-                    let date = new Date(this.date)
-                    return this.dateToIso(date)
-                }
-                else {
+                if (Array.isArray(this.date) && this.isRange && this.date[0] && this.date[1]) { //date is an array and array items have date values
+                    //need to convert formattedDate from Y-m-d to d/m/Y 
+                    const dateStart = new Date(this.isoToDate(this.date[0]))
+                    const dateEnd =  new Date(this.isoToDate(this.date[1]))
+                    return [this.dateToIso(dateStart), this.dateToIso(dateEnd)]
+                } else if (Array.isArray(this.date) && this.isRange && this.date[0] === null && this.date[1] === null) {  // when clearing dates, set the formattedDate array values to null
+                    return [null, null]
+                } else if (this.date && this.isRange === false && Array.isArray(this.date) === false) {
+                     //need to convert formattedDate from Y-m-d to d/m/Y 
+                    return this.dateToIso(new Date(this.isoToDate(this.date)))
+                } else { // when clearing dates, set the formattedDate value to null
                     return null
                 }
             },

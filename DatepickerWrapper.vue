@@ -16,7 +16,7 @@
         :range="isRange"
         :type="type"
         :clearable="isClearable"
-        @change="$emit('input', date)"
+        @change="$emit('input', formattedDate)"
     />
   </div>
 </template>

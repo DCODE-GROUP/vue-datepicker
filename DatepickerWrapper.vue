@@ -16,6 +16,7 @@
         :range="isRange"
         :type="type"
         :clearable="isClearable"
+        :placeholder="placeholder"
         @change="$emit('input', formattedDate)"
     />
   </div>
@@ -43,6 +44,7 @@
             },
             value: {
                 type: String | Array,
+                default: null,
             },
             isClearable: {
                 type: Boolean,
@@ -52,6 +54,10 @@
                 type: Boolean,
                 default: false,
             },
+            placeholder: {
+                type: String,
+                default: null,
+            }
         },
         data() {
             return {

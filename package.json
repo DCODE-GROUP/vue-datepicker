@@ -1,6 +1,6 @@
 {
   "name": "@dcodegroup-au/vue-datepicker",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "DcodeGroup's Vue2 datepicker wrapper.",
   "main": "''",
   "scripts": {

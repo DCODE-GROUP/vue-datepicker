@@ -17,8 +17,12 @@
         :type="type"
         :clearable="isClearable"
         :placeholder="placeholder"
+        :input-attr="{
+            name: '',
+        }"
         @change="$emit('input', formattedDate)"
     />
+    <!-- the name attr was added because by default its name is 'date' which conflicts with other fields -->
   </div>
 </template>
 

@@ -20,7 +20,7 @@
         :input-attr="{
             name: '',
         }"
-        @change="$emit('input', formattedDate)"
+        @change="$emit('input', { formattedDate, name, date })"
     />
     <!-- the name attr was added because by default its name is 'date' which conflicts with other fields -->
   </div>
